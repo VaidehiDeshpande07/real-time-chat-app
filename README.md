@@ -1,6 +1,6 @@
-# Real-Time Chat Application
+# NexTalk — Real-Time Chat Application
 
-A full-stack, real-time messaging platform developed progressively across 10 structured college experiments.
+A full-stack, real-time messaging platform ("NexTalk") developed progressively across 10 structured college experiments.
 
 ## Project Overview
 

@@ -31,14 +31,14 @@ export default function ExperimentInfo({ onReturnToChat }) {
         <section className="mt-6 space-y-2">
           <h2 className="text-sm font-bold uppercase tracking-wider text-indigo-400">1. Objective</h2>
           <p className="text-sm text-slate-300 leading-relaxed">
-            To implement and demonstrate core React Hooks (<code className="text-indigo-300 font-mono">useState</code>, <code className="text-indigo-300 font-mono">useEffect</code>, <code className="text-indigo-300 font-mono">useContext</code>) and a custom hook (<code className="text-indigo-300 font-mono">useLocalStorage</code>) to manage component-level and application-wide state in the PulseChat real-time messaging application.
+            To implement and demonstrate core React Hooks (<code className="text-indigo-300 font-mono">useState</code>, <code className="text-indigo-300 font-mono">useEffect</code>, <code className="text-indigo-300 font-mono">useContext</code>) and a custom hook (<code className="text-indigo-300 font-mono">useLocalStorage</code>) to manage component-level and application-wide state in the NexTalk real-time messaging application.
           </p>
         </section>
 
-        {/* Section 2: React Hooks Breakdown in PulseChat */}
+        {/* Section 2: React Hooks Breakdown in NexTalk */}
         <section className="mt-6 space-y-3">
           <h2 className="text-sm font-bold uppercase tracking-wider text-indigo-400">
-            2. React Hooks Demonstration in PulseChat
+            2. React Hooks Demonstration in NexTalk
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
             <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
@@ -122,7 +122,7 @@ export default function ExperimentInfo({ onReturnToChat }) {
               <span className="text-emerald-400 text-[10px] block">Status: {selectedUser?.status}</span>
             </div>
             <div className="p-3 bg-slate-900/90 rounded-lg border border-slate-800/80">
-              <span className="text-slate-500 block text-[10px]">useLocalStorage: "pulsechat-view"</span>
+              <span className="text-slate-500 block text-[10px]">useLocalStorage: "nextalk-view"</span>
               <span className="text-indigo-300 font-mono font-semibold">{currentView}</span>
               <span className="text-slate-500 text-[10px] block">Persisted in browser</span>
             </div>

@@ -4,7 +4,7 @@
 
 ## 1. Experiment Title & Aim
 * **Title:** Implementation of React Hooks in a Modern Web Application.
-* **Aim:** To implement and demonstrate the fundamental React Hooks (`useState`, `useEffect`, `useContext`) and design a custom hook (`useLocalStorage`) within the PulseChat real-time chat application, establishing clean, modular, and reusable state management without external libraries.
+* **Aim:** To implement and demonstrate the fundamental React Hooks (`useState`, `useEffect`, `useContext`) and design a custom hook (`useLocalStorage`) within the NexTalk real-time chat application, establishing clean, modular, and reusable state management without external libraries.
 
 ---
 
@@ -21,14 +21,14 @@ Introduced in React 16.8, **React Hooks** are functions that enable developers t
 #### 1. `useState`
 * **Concept:** Preserves local state values between component re-renders. Calling the setter function queues a re-render of the component with the new state.
 * **Syntax:** `const [state, setState] = useState(initialValue);`
-* **Role in PulseChat:**
+* **Role in NexTalk:**
   * Component-level interactive values such as search query strings, filter selections, message input values, and locally queued messages.
 
 #### 2. `useEffect`
 * **Concept:** Handles side effects (DOM mutations, timers, data fetching, subscriptions). It accepts a callback function and a dependency array.
 * **Syntax:** `useEffect(() => { /* side effect */ return () => { /* cleanup */ }; }, [dependencies]);`
-* **Role in PulseChat:**
-  * **Document Title Synchronization:** Updates `document.title` dynamically to reflect the selected contact (e.g., `"Chat with Sarah Connor | PulseChat (Exp 2)"`).
+* **Role in NexTalk:**
+  * **Document Title Synchronization:** Updates `document.title` dynamically to reflect the selected contact (e.g., `"Chat with Sarah Connor | NexTalk (Exp 2)"`).
   * **Timer Management & Cleanup:** Simulates contact typing indicators with `setTimeout` and cleans up via `clearTimeout` when switching users to prevent memory leaks.
 
 #### 3. `useContext`
@@ -37,17 +37,17 @@ Introduced in React 16.8, **React Hooks** are functions that enable developers t
   1. `const MyContext = createContext(defaultValue);`
   2. `<MyContext.Provider value={sharedValue}> <Children /> </MyContext.Provider>`
   3. `const value = useContext(MyContext);`
-* **Role in PulseChat:**
+* **Role in NexTalk:**
   * `AppContext.jsx` wraps the root application and distributes global state: `currentUser`, `selectedUser`, `currentView`, `showChatOnMobile`, and user selection actions.
 
 #### 4. Custom Hook (`useLocalStorage`)
 * **Concept:** A custom hook is a JavaScript function whose name starts with `use` and that may call other hooks. It allows developers to extract and reuse component logic across the application.
-* **Role in PulseChat:**
+* **Role in NexTalk:**
   * `useLocalStorage(key, initialValue)` encapsulates reading from and writing to the browser's `window.localStorage` with safe JSON parsing and fallback error boundaries. It persists UI preferences (such as the active view tab) across page reloads.
 
 ---
 
-## 3. Implementation Details in PulseChat
+## 3. Implementation Details in NexTalk
 
 ### 3.1 Custom Hook: `client/src/hooks/useLocalStorage.js`
 ```javascript
@@ -92,7 +92,7 @@ const AppContext = createContext(null);
 export function AppProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(mockCurrentUser);
   const [selectedUser, setSelectedUser] = useState(mockUsers[0]);
-  const [currentView, setCurrentView] = useLocalStorage('pulsechat-view', 'chat');
+  const [currentView, setCurrentView] = useLocalStorage('nextalk-view', 'chat', 'pulsechat-view');
   const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
   const selectUser = (user) => {
@@ -134,14 +134,14 @@ useEffect(() => {
   const originalTitle = document.title;
   if (currentView === 'chat') {
     document.title = selectedUser
-      ? `Chat with ${selectedUser.name} | PulseChat (Exp 2)`
-      : 'PulseChat | Real-Time Chat (Exp 2)';
+      ? `Chat with ${selectedUser.name} | NexTalk (Exp 2)`
+      : 'NexTalk | Real-Time Chat (Exp 2)';
   } else if (currentView === 'login') {
-    document.title = 'Sign In | PulseChat (Exp 2)';
+    document.title = 'Sign In | NexTalk (Exp 2)';
   } else if (currentView === 'register') {
-    document.title = 'Create Account | PulseChat (Exp 2)';
+    document.title = 'Create Account | NexTalk (Exp 2)';
   } else if (currentView === 'about') {
-    document.title = 'Experiment 2 Lab Manual | PulseChat';
+    document.title = 'Experiment 2 Lab Manual | NexTalk';
   }
 
   return () => {
@@ -202,11 +202,11 @@ useEffect(() => {
    * Verify that the top navbar reflects changes to `currentView` across all screens.
 3. **`useEffect` Dynamic Title Verification:**
    * Select **Sarah Connor** in the contacts list; observe the browser tab title:
-     `Chat with Sarah Connor | PulseChat (Exp 2)`.
+     `Chat with Sarah Connor | NexTalk (Exp 2)`.
    * Select **David Miller**; observe title changes to:
-     `Chat with David Miller | PulseChat (Exp 2)`.
+     `Chat with David Miller | NexTalk (Exp 2)`.
    * Switch to **Login View**; observe title changes to:
-     `Sign In | PulseChat (Exp 2)`.
+     `Sign In | NexTalk (Exp 2)`.
 4. **`useLocalStorage` Custom Hook Persistence Verification:**
    * Switch to the **"📋 Exp 2 Overview"** tab or **"🔐 Login View"**.
    * Refresh the browser (`F5` or `Ctrl+R`).
@@ -220,7 +220,7 @@ useEffect(() => {
 ---
 
 ## 6. Result & Conclusion
-Experiment 2 was successfully implemented. React Hooks (`useState`, `useEffect`, `useContext`) and a custom hook (`useLocalStorage`) were seamlessly integrated into the PulseChat application. All Experiment 1 layouts, styles, and responsive behaviors were preserved.
+Experiment 2 was successfully implemented. React Hooks (`useState`, `useEffect`, `useContext`) and a custom hook (`useLocalStorage`) were seamlessly integrated into the NexTalk application. All Experiment 1 layouts, styles, and responsive behaviors were preserved.
 
 ---
 

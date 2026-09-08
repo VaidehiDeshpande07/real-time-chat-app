@@ -3,7 +3,7 @@
 ---
 
 ## 1. Objective
-To design and implement a modern, fully responsive, and interactive user interface for a real-time chat application ("PulseChat") using **React.js**, **Vite**, and **Tailwind CSS**. The interface accommodates mobile, tablet, and desktop viewports and includes authentication forms, a collapsible contact sidebar with search and status indicators, dynamic chat message streams, and message composing controls using mock/static data.
+To design and implement a modern, fully responsive, and interactive user interface for a real-time chat application ("NexTalk") using **React.js**, **Vite**, and **Tailwind CSS**. The interface accommodates mobile, tablet, and desktop viewports and includes authentication forms, a collapsible contact sidebar with search and status indicators, dynamic chat message streams, and message composing controls using mock/static data.
 
 ---
 

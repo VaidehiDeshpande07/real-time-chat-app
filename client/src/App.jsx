@@ -4,7 +4,6 @@ import Sidebar from './components/chat/Sidebar';
 import ChatArea from './components/chat/ChatArea';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
-import ExperimentInfo from './components/common/ExperimentInfo';
 import { useAppContext } from './context/AppContext';
 
 export default function App() {
@@ -17,14 +16,14 @@ export default function App() {
 
     if (currentView === 'chat') {
       document.title = selectedUser
-        ? `Chat with ${selectedUser.name} | PulseChat (Exp 2)`
-        : 'PulseChat | Real-Time Chat (Exp 2)';
+        ? `Chat with ${selectedUser.name} | NexTalk`
+        : 'NexTalk | Direct Messages';
     } else if (currentView === 'login') {
-      document.title = 'Sign In | PulseChat (Exp 2)';
+      document.title = 'Sign In | NexTalk';
     } else if (currentView === 'register') {
-      document.title = 'Create Account | PulseChat (Exp 2)';
-    } else if (currentView === 'about') {
-      document.title = 'Experiment 2 Lab Manual | PulseChat';
+      document.title = 'Create Account | NexTalk';
+    } else {
+      document.title = 'NexTalk | Real-Time Messaging';
     }
 
     // Effect cleanup function
@@ -35,17 +34,17 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
-      {/* Top Navbar (consumes context internally) */}
+      {/* Top Application Navbar */}
       <Navbar />
 
-      {/* Main Content Area */}
+      {/* Main View Area */}
       <div className="flex-1 overflow-hidden">
         {currentView === 'chat' && (
           <div className="flex h-full w-full">
-            {/* Sidebar (consumes context internally) */}
+            {/* Sidebar (Contacts list, search, presence) */}
             <Sidebar />
 
-            {/* Main Chat Feed (consumes context internally) */}
+            {/* Main Chat Feed (Conversation header, message feed, input bar) */}
             <ChatArea />
           </div>
         )}
@@ -65,12 +64,6 @@ export default function App() {
               onNavigateToLogin={() => setCurrentView('login')}
               onDemoRegister={() => setCurrentView('chat')}
             />
-          </div>
-        )}
-
-        {currentView === 'about' && (
-          <div className="h-full overflow-y-auto">
-            <ExperimentInfo onReturnToChat={() => setCurrentView('chat')} />
           </div>
         )}
       </div>

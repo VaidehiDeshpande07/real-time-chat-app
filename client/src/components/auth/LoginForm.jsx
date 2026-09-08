@@ -7,24 +7,14 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-sm">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600/20 text-indigo-400 mb-4 ring-1 ring-indigo-500/30">
-            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-black text-2xl mb-4 shadow-lg shadow-indigo-600/30">
+            N
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">Welcome Back</h2>
-          <p className="text-sm text-slate-400 mt-2">Sign in to your PulseChat account</p>
+          <p className="text-sm text-slate-400 mt-2">Sign in to your NexTalk account</p>
         </div>
 
-        {/* Experiment 1 Callout */}
-        <div className="mb-6 p-3.5 rounded-xl bg-indigo-950/40 border border-indigo-500/20 text-indigo-300 text-xs flex items-center gap-2">
-          <span className="font-semibold px-2 py-0.5 rounded bg-indigo-600/30 text-indigo-200 uppercase tracking-wider text-[10px]">
-            Exp 1
-          </span>
-          <span>Responsive UI mockup using Tailwind CSS utility classes</span>
-        </div>
-
-        {/* Form Mockup */}
+        {/* Form */}
         <form onSubmit={(e) => { e.preventDefault(); onDemoLogin(); }} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
@@ -32,8 +22,8 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
             </label>
             <input
               type="email"
-              defaultValue="alex.johnson@college.edu"
-              placeholder="name@college.edu"
+              defaultValue="alex.johnson@nextalk.app"
+              placeholder="name@company.com"
               className="w-full px-4 py-3 rounded-xl bg-slate-950/60 border border-slate-700/70 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
@@ -65,8 +55,8 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
               Remember this device
             </label>
 
-            <span className="inline-flex items-center gap-1 text-xs text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <ShieldIcon className="w-3 h-3" /> Ready
+            <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+              <ShieldIcon className="w-3.5 h-3.5 text-emerald-400" /> Secure Login
             </span>
           </div>
 
@@ -74,7 +64,7 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
             type="submit"
             className="w-full mt-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 group"
           >
-            <span>Sign In to PulseChat</span>
+            <span>Sign In to NexTalk</span>
             <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>

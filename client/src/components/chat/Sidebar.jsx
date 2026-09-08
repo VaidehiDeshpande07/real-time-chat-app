@@ -5,6 +5,7 @@ import { useAppContext } from '../../context/AppContext';
 
 export default function Sidebar() {
   // 1. Consuming shared context state via useContext (useAppContext)
+  //    Experiment 3: unreadCounts now comes from the centralized reducer
   const {
     currentUser,
     users,
@@ -12,7 +13,9 @@ export default function Sidebar() {
     selectUser,
     logout,
     showChatOnMobile,
+    unreadCounts,
   } = useAppContext();
+
 
   // 2. Local interactive state using useState
   const [searchTerm, setSearchTerm] = useState('');
@@ -126,6 +129,7 @@ export default function Sidebar() {
               user={user}
               isSelected={selectedUser?.id === user.id}
               onSelect={selectUser}
+              unreadCount={unreadCounts[user.id] || 0}
             />
           ))
         )}
@@ -133,8 +137,8 @@ export default function Sidebar() {
 
       {/* Footer Info Badge */}
       <div className="p-3 bg-slate-950/40 border-t border-slate-800 text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5">
-        <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span>Experiment 2: React Hooks Active</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span>NexTalk • Real-time messaging</span>
       </div>
     </aside>
   );

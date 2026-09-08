@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldIcon } from '../common/Icons';
 
-export default function UserItem({ user, isSelected, onSelect }) {
+export default function UserItem({ user, isSelected, onSelect, unreadCount = 0 }) {
   const isOnline = user.status === 'online';
 
   return (
@@ -53,9 +53,9 @@ export default function UserItem({ user, isSelected, onSelect }) {
               user.lastMessage
             )}
           </p>
-          {user.unreadCount > 0 && (
+          {unreadCount > 0 && (
             <span className="flex-shrink-0 flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold">
-              {user.unreadCount}
+              {unreadCount}
             </span>
           )}
         </div>
