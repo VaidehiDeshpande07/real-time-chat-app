@@ -3,15 +3,37 @@ import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { mockMessages } from '../../data/mockData';
+import { useAppContext } from '../../context/AppContext';
 
-export default function ChatArea({ selectedUser, onBackToSidebar, isVisibleOnMobile }) {
+export default function ChatArea() {
+  // 1. Consuming shared context state via useContext (useAppContext)
+  const { selectedUser, backToSidebar, showChatOnMobile } = useAppContext();
+
+  // 2. Local interactive state using useState
   const [messages, setMessages] = useState(mockMessages);
+  const [isTypingSimulated, setIsTypingSimulated] = useState(selectedUser?.isTyping || false);
 
-  // Reset or update messages when selected user changes
+  // 3. Meaningful useEffect: Synchronize messages and manage simulated typing with timer cleanup
   useEffect(() => {
-    // For demo/mock purposes in Exp 1, start with the sample messages
+    // Reset conversation feed to initial mock messages for the newly selected user
     setMessages(mockMessages);
-  }, [selectedUser?.id]);
+    setIsTypingSimulated(Boolean(selectedUser?.isTyping));
+
+    let timerId = null;
+    if (selectedUser?.isTyping) {
+      // Simulate the contact finishing typing after 2.5 seconds
+      timerId = setTimeout(() => {
+        setIsTypingSimulated(false);
+      }, 2500);
+    }
+
+    // Effect cleanup: Always clear timers to prevent memory leaks when switching contacts rapidly
+    return () => {
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    };
+  }, [selectedUser?.id, selectedUser?.isTyping]);
 
   const handleSendMessage = (text) => {
     const newMessage = {
@@ -30,7 +52,7 @@ export default function ChatArea({ selectedUser, onBackToSidebar, isVisibleOnMob
     return (
       <div
         className={`flex-1 flex-col items-center justify-center bg-slate-950 text-slate-400 p-8 ${
-          isVisibleOnMobile ? 'flex' : 'hidden md:flex'
+          showChatOnMobile ? 'flex' : 'hidden md:flex'
         }`}
       >
         <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-indigo-400 mb-4">
@@ -46,25 +68,29 @@ export default function ChatArea({ selectedUser, onBackToSidebar, isVisibleOnMob
     );
   }
 
+  // Clone selectedUser with dynamic typing state for the UI
+  const activeUserWithDynamicTyping = {
+    ...selectedUser,
+    isTyping: isTypingSimulated,
+  };
+
   return (
     <main
       className={`flex-1 flex-col h-full bg-slate-950 ${
-        isVisibleOnMobile ? 'flex' : 'hidden md:flex'
+        showChatOnMobile ? 'flex' : 'hidden md:flex'
       }`}
     >
       <ChatHeader
-        selectedUser={selectedUser}
-        onBackToSidebar={onBackToSidebar}
-      />
-      
-      <MessageList
-        messages={messages}
-        selectedUser={selectedUser}
+        selectedUser={activeUserWithDynamicTyping}
+        onBackToSidebar={backToSidebar}
       />
 
-      <MessageInput
-        onSendMessage={handleSendMessage}
+      <MessageList
+        messages={messages}
+        selectedUser={activeUserWithDynamicTyping}
       />
+
+      <MessageInput onSendMessage={handleSendMessage} />
     </main>
   );
 }

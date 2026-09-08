@@ -15,7 +15,7 @@ A full-stack, real-time messaging platform developed progressively across 10 str
 ## 10 College Experiments Roadmap
 
 - [x] **Experiment 1:** Build responsive and interactive UIs using Tailwind CSS
-- [ ] **Experiment 2:** React Hooks: `useState`, `useEffect`, `useContext`, custom hooks
+- [x] **Experiment 2:** React Hooks: `useState`, `useEffect`, `useContext`, custom hooks
 - [ ] **Experiment 3:** Manage complex state with Context API or Redux
 - [ ] **Experiment 4:** REST API Design with MongoDB + Mongoose Integration
 - [ ] **Experiment 5:** Create secure, production-ready RESTful APIs

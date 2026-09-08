@@ -1,56 +1,52 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import Navbar from './components/common/Navbar';
 import Sidebar from './components/chat/Sidebar';
 import ChatArea from './components/chat/ChatArea';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import ExperimentInfo from './components/common/ExperimentInfo';
-import { mockCurrentUser, mockUsers } from './data/mockData';
+import { useAppContext } from './context/AppContext';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('chat'); // 'chat' | 'login' | 'register' | 'about'
-  const [currentUser, setCurrentUser] = useState(mockCurrentUser);
-  const [selectedUser, setSelectedUser] = useState(mockUsers[0]);
-  const [showChatOnMobile, setShowChatOnMobile] = useState(false);
+  // 1. Consume shared state and actions from AppContext via useContext
+  const { currentView, setCurrentView, selectedUser } = useAppContext();
 
-  const handleSelectUser = (user) => {
-    setSelectedUser(user);
-    setShowChatOnMobile(true);
-  };
+  // 2. Demonstrate useEffect for dynamic browser document title updates
+  useEffect(() => {
+    const originalTitle = document.title;
 
-  const handleBackToSidebar = () => {
-    setShowChatOnMobile(false);
-  };
+    if (currentView === 'chat') {
+      document.title = selectedUser
+        ? `Chat with ${selectedUser.name} | PulseChat (Exp 2)`
+        : 'PulseChat | Real-Time Chat (Exp 2)';
+    } else if (currentView === 'login') {
+      document.title = 'Sign In | PulseChat (Exp 2)';
+    } else if (currentView === 'register') {
+      document.title = 'Create Account | PulseChat (Exp 2)';
+    } else if (currentView === 'about') {
+      document.title = 'Experiment 2 Lab Manual | PulseChat';
+    }
 
-  const handleLogout = () => {
-    setCurrentView('login');
-  };
+    // Effect cleanup function
+    return () => {
+      document.title = originalTitle;
+    };
+  }, [currentView, selectedUser]);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
-      {/* Top Navbar */}
-      <Navbar currentView={currentView} setCurrentView={setCurrentView} />
+      {/* Top Navbar (consumes context internally) */}
+      <Navbar />
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-hidden">
         {currentView === 'chat' && (
           <div className="flex h-full w-full">
-            {/* Sidebar (Responsive: Visible on mobile if not looking at a chat) */}
-            <Sidebar
-              currentUser={currentUser}
-              users={mockUsers}
-              selectedUser={selectedUser}
-              onSelectUser={handleSelectUser}
-              onLogout={handleLogout}
-              isVisibleOnMobile={!showChatOnMobile}
-            />
+            {/* Sidebar (consumes context internally) */}
+            <Sidebar />
 
-            {/* Main Chat Feed (Responsive: Visible on mobile if looking at a chat) */}
-            <ChatArea
-              selectedUser={selectedUser}
-              onBackToSidebar={handleBackToSidebar}
-              isVisibleOnMobile={showChatOnMobile}
-            />
+            {/* Main Chat Feed (consumes context internally) */}
+            <ChatArea />
           </div>
         )}
 

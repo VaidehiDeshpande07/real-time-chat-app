@@ -1,11 +1,15 @@
 import React from 'react';
+import { useAppContext } from '../../context/AppContext';
 
-export default function Navbar({ currentView, setCurrentView }) {
+export default function Navbar() {
+  // Consuming shared state directly from AppContext via custom hook
+  const { currentView, setCurrentView } = useAppContext();
+
   const views = [
     { id: 'chat', label: '💬 Chat Dashboard' },
     { id: 'login', label: '🔐 Login View' },
     { id: 'register', label: '📝 Register View' },
-    { id: 'about', label: '📋 Exp 1 Overview' },
+    { id: 'about', label: '📋 Exp 2 Overview' },
   ];
 
   return (
@@ -20,12 +24,12 @@ export default function Navbar({ currentView, setCurrentView }) {
             <span className="font-extrabold text-sm sm:text-base tracking-tight text-white">
               PulseChat
             </span>
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wide">
-              Experiment 1
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wide">
+              Experiment 2: React Hooks
             </span>
           </div>
           <p className="hidden md:block text-[11px] text-slate-400">
-            Tailwind CSS Responsive & Interactive UI
+            useState • useEffect • useContext • Custom Hook
           </p>
         </div>
       </div>

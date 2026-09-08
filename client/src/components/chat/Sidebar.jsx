@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
 import UserItem from './UserItem';
 import { SearchIcon, LogoutIcon, ShieldIcon } from '../common/Icons';
+import { useAppContext } from '../../context/AppContext';
 
-export default function Sidebar({
-  currentUser,
-  users,
-  selectedUser,
-  onSelectUser,
-  onLogout,
-  isVisibleOnMobile
-}) {
+export default function Sidebar() {
+  // 1. Consuming shared context state via useContext (useAppContext)
+  const {
+    currentUser,
+    users,
+    selectedUser,
+    selectUser,
+    logout,
+    showChatOnMobile,
+  } = useAppContext();
+
+  // 2. Local interactive state using useState
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'online'
 
   // Filter users based on search term & online filter
   const filteredUsers = users.filter((user) => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesOnline = filterMode === 'online' ? user.status === 'online' : true;
     return matchesSearch && matchesOnline;
   });
@@ -26,7 +32,7 @@ export default function Sidebar({
   return (
     <aside
       className={`w-full md:w-80 lg:w-96 flex flex-col h-full bg-slate-900 border-r border-slate-800 ${
-        isVisibleOnMobile ? 'flex' : 'hidden md:flex'
+        !showChatOnMobile ? 'flex' : 'hidden md:flex'
       }`}
     >
       {/* Current User Header */}
@@ -52,7 +58,7 @@ export default function Sidebar({
         </div>
 
         <button
-          onClick={onLogout}
+          onClick={logout}
           title="Sign Out (Mock)"
           className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
         >
@@ -60,7 +66,7 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Search Input Bar (Objective 6: Search users) */}
+      {/* Search Input Bar (Demonstrating useState for controlled inputs) */}
       <div className="p-3 border-b border-slate-800/60">
         <div className="relative">
           <SearchIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -81,7 +87,7 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* Filter Pills */}
+        {/* Filter Pills (Demonstrating useState for view/filter toggles) */}
         <div className="flex items-center gap-2 mt-2.5">
           <button
             onClick={() => setFilterMode('all')}
@@ -119,7 +125,7 @@ export default function Sidebar({
               key={user.id}
               user={user}
               isSelected={selectedUser?.id === user.id}
-              onSelect={onSelectUser}
+              onSelect={selectUser}
             />
           ))
         )}
@@ -127,8 +133,8 @@ export default function Sidebar({
 
       {/* Footer Info Badge */}
       <div className="p-3 bg-slate-950/40 border-t border-slate-800 text-[11px] text-slate-500 text-center flex items-center justify-center gap-1.5">
-        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-        <span>PulseChat UI • Experiment 1 (Tailwind CSS)</span>
+        <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>Experiment 2: React Hooks Active</span>
       </div>
     </aside>
   );
