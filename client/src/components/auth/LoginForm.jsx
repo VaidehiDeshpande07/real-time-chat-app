@@ -1,49 +1,79 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ShieldIcon } from '../common/Icons';
+import { loginUser } from '../../services/api';
 
 export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
+  const [email, setEmail] = useState('alex.demo@example.com');
+  const [password, setPassword] = useState('DemoPassword789');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      const data = await loginUser(email, password);
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      onDemoLogin(data.user);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-sm">
-        {/* Header */}
+
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-black text-2xl mb-4 shadow-lg shadow-indigo-600/30">
             N
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">Welcome Back</h2>
-          <p className="text-sm text-slate-400 mt-2">Sign in to your NexTalk account</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            Welcome Back
+          </h2>
+          <p className="text-sm text-slate-400 mt-2">
+            Sign in to your NexTalk account
+          </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={(e) => { e.preventDefault(); onDemoLogin(); }} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
               Email Address
             </label>
+
             <input
               type="email"
-              defaultValue="alex.johnson@nextalk.app"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="name@company.com"
               className="w-full px-4 py-3 rounded-xl bg-slate-950/60 border border-slate-700/70 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                Password
-              </label>
-              <button type="button" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
-                Forgot password?
-              </button>
-            </div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+              Password
+            </label>
+
             <input
               type="password"
-              defaultValue="••••••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               className="w-full px-4 py-3 rounded-xl bg-slate-950/60 border border-slate-700/70 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
           </div>
+
+          {error && (
+            <p className="text-sm text-red-400">
+              {error}
+            </p>
+          )}
 
           <div className="flex items-center justify-between pt-1">
             <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400 select-none">
@@ -56,7 +86,8 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
             </label>
 
             <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-              <ShieldIcon className="w-3.5 h-3.5 text-emerald-400" /> Secure Login
+              <ShieldIcon className="w-3.5 h-3.5 text-emerald-400" />
+              Secure Login
             </span>
           </div>
 
@@ -69,9 +100,9 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </button>
+
         </form>
 
-        {/* Footer switcher */}
         <div className="mt-8 pt-6 border-t border-slate-800 text-center">
           <p className="text-sm text-slate-400">
             Don't have an account?{' '}
@@ -83,6 +114,7 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
             </button>
           </p>
         </div>
+
       </div>
     </div>
   );

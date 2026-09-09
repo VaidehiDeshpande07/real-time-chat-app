@@ -1,18 +1,30 @@
-import React, { createContext, useContext, useState, useReducer } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useReducer,
+  useEffect,
+} from 'react';
+
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { mockCurrentUser, mockUsers, mockConversations } from '../data/mockData';
 import { appReducer, ACTIONS } from './appReducer';
 
-// 1. Create the React Context
+import {
+  getUsers,
+  getMessages,
+  sendMessage as sendMessageAPI,
+} from '../services/api';
+
 const AppContext = createContext(null);
 
-// ─── Initial Reducer State ────────────────────────────────────────────────────
-// Build initial unreadCounts from mockUsers static data
-const initialUnreadCounts = mockUsers.reduce((acc, u) => {
-  acc[u.id] = u.unreadCount || 0;
+// Initial unread counts
+const initialUnreadCounts = mockUsers.reduce((acc, user) => {
+  acc[user.id] = user.unreadCount || 0;
   return acc;
 }, {});
 
+// Initial chat state
 const initialChatState = {
   selectedUser: mockUsers[0],
   conversations: mockConversations,
@@ -20,133 +32,339 @@ const initialChatState = {
   users: mockUsers,
 };
 
-/**
- * AppProvider Component
- * Supplies shared application state across all components without prop-drilling.
- *
- * Experiment 2 (preserved): useState for currentUser, currentView, showChatOnMobile
- * Experiment 3 (new):       useReducer for selectedUser, conversations, unreadCounts, users
- */
 export function AppProvider({ children }) {
-  // ── Experiment 2 state (preserved) ────────────────────────────────────────
-  const [currentUser, setCurrentUser] = useState(mockCurrentUser);
 
-  // Persisted view using custom hook useLocalStorage (Exp 2 custom hook)
-  const [storedView, setStoredView] = useLocalStorage('nextalk-view', 'chat', 'pulsechat-view');
-  const currentView = (storedView === 'login' || storedView === 'register') ? storedView : 'chat';
+  // Current logged-in user
+  const storedUser = localStorage.getItem('user');
+
+  const [currentUser, setCurrentUser] = useState(
+    storedUser ? JSON.parse(storedUser) : mockCurrentUser
+  );
+
+  // View
+  const [storedView, setStoredView] = useLocalStorage(
+    'nextalk-view',
+    'chat',
+    'pulsechat-view'
+  );
+
+  const currentView =
+    storedView === 'login' || storedView === 'register'
+      ? storedView
+      : 'chat';
+
   const setCurrentView = setStoredView;
 
-  // Controls mobile single-pane layout
+  // Mobile layout
   const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
-  // ── Experiment 3: useReducer for centralized chat state ───────────────────
-  const [chatState, dispatch] = useReducer(appReducer, initialChatState);
+  // Reducer
+  const [chatState, dispatch] = useReducer(
+    appReducer,
+    initialChatState
+  );
 
-  // ── Exp 3 Action functions (dispatch wrappers) ─────────────────────────────
+  // ---------------------------------------------------------
+  // LOAD USERS FROM MONGODB
+  // ---------------------------------------------------------
 
-  /** Select a contact — clears their unread count automatically */
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    if (!token) return;
+
+    const loadUsers = async () => {
+      try {
+        const data = await getUsers(token);
+
+        const loggedInUser = JSON.parse(
+          localStorage.getItem('user')
+        );
+
+        const formattedUsers = data
+          .filter((user) => user._id !== loggedInUser?._id)
+          .map((user) => ({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            status: user.status,
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              user.name
+            )}`,
+            role: 'User',
+            unreadCount: 0,
+          }));
+
+        dispatch({
+          type: ACTIONS.SET_USERS,
+          payload: {
+            users: formattedUsers,
+          },
+        });
+
+        // Select first real user
+        if (formattedUsers.length > 0) {
+          dispatch({
+            type: ACTIONS.SELECT_USER,
+            payload: {
+              user: formattedUsers[0],
+            },
+          });
+        }
+
+      } catch (error) {
+        console.error(
+          'Failed to load users:',
+          error.message
+        );
+      }
+    };
+
+    loadUsers();
+  }, []);
+
+  // ---------------------------------------------------------
+  // LOAD MESSAGES FROM MONGODB
+  // ---------------------------------------------------------
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    if (!token || !chatState.selectedUser?.id) return;
+
+    const loadMessages = async () => {
+      try {
+        const data = await getMessages(
+          chatState.selectedUser.id,
+          token
+        );
+
+        const loggedInUser = JSON.parse(
+          localStorage.getItem('user')
+        );
+
+        const formattedMessages = data.map((message) => ({
+          id: message._id,
+          senderId: message.sender._id,
+          receiverId: message.receiver._id,
+          text: message.content,
+
+          timestamp: new Date(
+            message.createdAt
+          ).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+
+          fromMe:
+            message.sender._id === loggedInUser?._id,
+
+          status: 'delivered',
+        }));
+
+        dispatch({
+          type: ACTIONS.SET_CONVERSATIONS,
+          payload: {
+            conversations: {
+              [chatState.selectedUser.id]:
+                formattedMessages,
+            },
+          },
+        });
+
+      } catch (error) {
+        console.error(
+          'Failed to load messages:',
+          error.message
+        );
+      }
+    };
+
+    loadMessages();
+
+  }, [chatState.selectedUser?.id]);
+
+  // ---------------------------------------------------------
+  // SELECT USER
+  // ---------------------------------------------------------
+
   const selectUser = (user) => {
-    dispatch({ type: ACTIONS.SELECT_USER, payload: { user } });
+    dispatch({
+      type: ACTIONS.SELECT_USER,
+      payload: { user },
+    });
+
     setShowChatOnMobile(true);
   };
 
-  /** Send a message to the currently selected user */
-  const sendMessage = (text) => {
+  // ---------------------------------------------------------
+  // SEND MESSAGE TO MONGODB
+  // ---------------------------------------------------------
+
+  const sendMessage = async (text) => {
     if (!chatState.selectedUser) return;
-    const newMsg = {
-      id: `m_${Date.now()}`,
-      senderId: currentUser.id || 'u1',
-      receiverId: chatState.selectedUser.id,
-      text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      fromMe: true,
-      status: 'delivered',
-    };
+
+    const token = localStorage.getItem('token');
+
+    if (!token) return;
+
+    try {
+      const data = await sendMessageAPI(
+        chatState.selectedUser.id,
+        text,
+        token
+      );
+
+      const newMsg = {
+        id: data._id,
+
+        senderId: data.sender._id,
+        receiverId: data.receiver._id,
+
+        text: data.content,
+
+        timestamp: new Date(
+          data.createdAt
+        ).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+
+        fromMe: true,
+        status: 'delivered',
+      };
+
+      dispatch({
+        type: ACTIONS.SEND_MESSAGE,
+        payload: {
+          userId: chatState.selectedUser.id,
+          message: newMsg,
+        },
+      });
+
+    } catch (error) {
+      console.error(
+        'Failed to send message:',
+        error.message
+      );
+    }
+  };
+
+  // ---------------------------------------------------------
+  // OTHER REDUCER FUNCTIONS
+  // ---------------------------------------------------------
+
+  const receiveMessage = (userId, message) => {
     dispatch({
-      type: ACTIONS.SEND_MESSAGE,
-      payload: { userId: chatState.selectedUser.id, message: newMsg },
+      type: ACTIONS.RECEIVE_MESSAGE,
+      payload: {
+        userId,
+        message,
+      },
     });
   };
 
-  /** Receive a message from a user (increments unread if not selected) */
-  const receiveMessage = (userId, message) => {
-    dispatch({ type: ACTIONS.RECEIVE_MESSAGE, payload: { userId, message } });
-  };
-
-  /** Explicitly mark all messages from a user as read */
   const markMessagesRead = (userId) => {
-    dispatch({ type: ACTIONS.MARK_MESSAGES_READ, payload: { userId } });
+    dispatch({
+      type: ACTIONS.MARK_MESSAGES_READ,
+      payload: { userId },
+    });
   };
 
-  /** Update a user's online/offline status */
   const setUserOnline = (userId, isOnline) => {
-    dispatch({ type: ACTIONS.SET_ONLINE_STATUS, payload: { userId, isOnline } });
+    dispatch({
+      type: ACTIONS.SET_ONLINE_STATUS,
+      payload: {
+        userId,
+        isOnline,
+      },
+    });
   };
 
-  // ── Exp 4+ helpers (no-ops until backend connected) ───────────────────────
   const setUsers = (users) => {
-    dispatch({ type: ACTIONS.SET_USERS, payload: { users } });
+    dispatch({
+      type: ACTIONS.SET_USERS,
+      payload: { users },
+    });
   };
 
   const setConversations = (conversations) => {
-    dispatch({ type: ACTIONS.SET_CONVERSATIONS, payload: { conversations } });
+    dispatch({
+      type: ACTIONS.SET_CONVERSATIONS,
+      payload: { conversations },
+    });
   };
 
-  // ── Navigation actions (preserved from Exp 1/2) ───────────────────────────
-  const backToSidebar = () => setShowChatOnMobile(false);
+  // ---------------------------------------------------------
+  // NAVIGATION
+  // ---------------------------------------------------------
+
+  const backToSidebar = () => {
+    setShowChatOnMobile(false);
+  };
 
   const logout = () => {
-    localStorage.removeItem('nextalk_token');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
+    setCurrentUser(mockCurrentUser);
     setCurrentView('login');
   };
 
-  // ── Context value ──────────────────────────────────────────────────────────
+  // ---------------------------------------------------------
+  // CONTEXT VALUE
+  // ---------------------------------------------------------
+
   const value = {
-    // Experiment 2 state (preserved)
     currentUser,
     setCurrentUser,
+
     currentView,
     setCurrentView,
+
     showChatOnMobile,
     setShowChatOnMobile,
 
-    // Experiment 3 state (from reducer)
     selectedUser: chatState.selectedUser,
     conversations: chatState.conversations,
     unreadCounts: chatState.unreadCounts,
     users: chatState.users,
 
-    // Experiment 3 action functions
     selectUser,
     sendMessage,
     receiveMessage,
     markMessagesRead,
     setUserOnline,
 
-    // Experiment 4+ helpers
     setUsers,
     setConversations,
 
-    // Navigation
     backToSidebar,
     logout,
 
-    // Expose dispatch for advanced use (Exp 4+)
     dispatch,
   };
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  );
 }
 
-/**
- * Custom consumer hook: useAppContext
- * Clean wrapper to consume AppContext in any child component.
- */
+// ---------------------------------------------------------
+// CUSTOM HOOK
+// ---------------------------------------------------------
+
 export function useAppContext() {
   const context = useContext(AppContext);
+
   if (!context) {
-    throw new Error('useAppContext must be used within an <AppProvider>');
+    throw new Error(
+      'useAppContext must be used within an <AppProvider>'
+    );
   }
+
   return context;
 }
 
