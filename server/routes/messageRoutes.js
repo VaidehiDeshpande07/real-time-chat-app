@@ -4,12 +4,11 @@ const {
     createMessage
 } = require("../controllers/messageController");
 
+const protect = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
-// GET messages between two users
-router.get("/:userId", getMessages);
-
-// POST create message
-router.post("/", createMessage);
+router.get("/:userId", protect, getMessages);
+router.post("/", protect, createMessage);
 
 module.exports = router;

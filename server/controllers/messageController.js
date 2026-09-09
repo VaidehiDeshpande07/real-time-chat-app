@@ -4,13 +4,7 @@ const Message = require("../models/Message");
 const getMessages = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { currentUserId } = req.query;
-
-        if (!currentUserId) {
-            return res.status(400).json({
-                message: "currentUserId is required"
-            });
-        }
+        const currentUserId = req.user;
 
         const messages = await Message.find({
             $or: [
@@ -24,25 +18,26 @@ const getMessages = async (req, res) => {
 
         res.json(messages);
     } catch (error) {
+        console.error("Get messages error:", error.message);
+
         res.status(500).json({
             message: "Failed to fetch messages"
         });
     }
 };
-
 // Create a new message
 const createMessage = async (req, res) => {
     try {
-        const { sender, receiver, content } = req.body;
+        const { receiver, content } = req.body;
 
-        if (!sender || !receiver || !content) {
+        if (!receiver || !content) {
             return res.status(400).json({
-                message: "sender, receiver and content are required"
+                message: "receiver and content are required"
             });
         }
 
         const message = await Message.create({
-            sender,
+            sender: req.user,
             receiver,
             content
         });
@@ -59,13 +54,15 @@ const createMessage = async (req, res) => {
         ]);
 
         res.status(201).json(populatedMessage);
-    } catch (error) {
-        res.status(500).json({
-            message: "Failed to create message"
-        });
-    }
-};
+    }  catch (error) {
+    console.error("Create message error:", error.message);
 
+    res.status(500).json({
+        message: "Failed to create message",
+        error: error.message
+    });
+}
+};
 module.exports = {
     getMessages,
     createMessage

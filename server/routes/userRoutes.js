@@ -4,12 +4,12 @@ const {
     createUser
 } = require("../controllers/userController");
 
+const protect = require("../middleware/authMiddleware");
+const { validateUser } = require("../middleware/validationMiddleware");
+
 const router = express.Router();
 
-// GET all users
-router.get("/", getUsers);
-
-// POST create user
-router.post("/", createUser);
+router.post("/", validateUser, createUser);
+router.get("/", protect, getUsers);
 
 module.exports = router;
