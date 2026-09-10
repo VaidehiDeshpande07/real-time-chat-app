@@ -42,17 +42,18 @@ export function AppProvider({ children }) {
   );
 
   // View
-  const [storedView, setStoredView] = useLocalStorage(
-    'nextalk-view',
-    'chat',
-    'pulsechat-view'
-  );
-
-  const currentView =
-    storedView === 'login' || storedView === 'register'
-      ? storedView
-      : 'chat';
-
+const [storedView, setStoredView] = useLocalStorage(
+  'nextalk-view',
+  'landing',
+  'pulsechat-view'
+);
+const currentView =
+  storedView === 'login' ||
+  storedView === 'register' ||
+  storedView === 'chat' ||
+  storedView === 'landing'
+    ? storedView
+    : 'landing';
   const setCurrentView = setStoredView;
 
   // Mobile layout
@@ -308,8 +309,7 @@ export function AppProvider({ children }) {
     localStorage.removeItem('user');
 
     setCurrentUser(mockCurrentUser);
-    setCurrentView('login');
-  };
+    setCurrentView('landing');  };
 
   // ---------------------------------------------------------
   // CONTEXT VALUE

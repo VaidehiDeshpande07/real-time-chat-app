@@ -6,6 +6,40 @@ export default function Navbar() {
   // Consuming shared state directly from AppContext via useContext
   const { currentView, setCurrentView, currentUser, logout, backToSidebar } = useAppContext();
 
+  if (currentView === 'landing') {
+  return (
+    <nav className="h-16 bg-slate-950 px-6 flex items-center justify-between">
+      <div
+        onClick={() => setCurrentView('landing')}
+        className="flex items-center gap-3 cursor-pointer"
+      >
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-black text-lg shadow-md shadow-indigo-500/20">
+          N
+        </div>
+
+        <span className="font-extrabold text-lg tracking-tight text-white">
+          NexTalk
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setCurrentView('login')}
+          className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-300 hover:text-white transition-all"
+        >
+          Sign In
+        </button>
+
+        <button
+          onClick={() => setCurrentView('register')}
+          className="px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition-all"
+        >
+          Get Started
+        </button>
+      </div>
+    </nav>
+  );
+}
   return (
     <nav className="h-16 bg-slate-900 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between z-20 flex-shrink-0">
       {/* Brand & Project Info */}

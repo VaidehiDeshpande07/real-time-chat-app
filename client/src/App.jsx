@@ -4,6 +4,7 @@ import Sidebar from './components/chat/Sidebar';
 import ChatArea from './components/chat/ChatArea';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
+import LandingPage from './components/common/LandingPage';
 import { useAppContext } from './context/AppContext';
 
 export default function App() {
@@ -23,9 +24,8 @@ export default function App() {
     } else if (currentView === 'register') {
       document.title = 'Create Account | NexTalk';
     } else {
-      document.title = 'NexTalk | Real-Time Messaging';
-    }
-
+  document.title = 'NexTalk | Modern Messaging';
+}
     // Effect cleanup function
     return () => {
       document.title = originalTitle;
@@ -38,6 +38,11 @@ export default function App() {
       <Navbar />
 
       {/* Main View Area */}
+      {currentView === 'landing' && (
+  <div className="h-full overflow-y-auto">
+    <LandingPage />
+  </div>
+)}
       <div className="flex-1 overflow-hidden">
         {currentView === 'chat' && (
           <div className="flex h-full w-full">
