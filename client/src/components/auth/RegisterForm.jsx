@@ -6,7 +6,6 @@ export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('USER');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,11 +30,10 @@ export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
 
     try {
       const data = await registerUser({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        role
-      });
+  name: name.trim(),
+  email: email.trim(),
+  password
+});
 
       console.log('[Frontend Auth] Registration successful:', data);
       setSuccess('Account created successfully! Redirecting to Sign In...');
@@ -99,60 +97,6 @@ export default function RegisterForm({ onNavigateToLogin, onRegisterSuccess }) {
               placeholder="name@company.com"
               className="w-full px-4 py-3 rounded-xl bg-slate-950/60 border border-slate-700/70 text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
             />
-          </div>
-
-          {/* Account Role */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
-              Account Role
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label 
-                onClick={() => setRole('USER')}
-                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                  role === 'USER' 
-                    ? 'border-indigo-500/50 bg-indigo-950/30 ring-1 ring-indigo-500/30' 
-                    : 'border-slate-800 bg-slate-950/40 hover:bg-slate-900/40'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="role"
-                  value="USER"
-                  checked={role === 'USER'}
-                  onChange={() => setRole('USER')}
-                  className="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700 focus:ring-indigo-500"
-                />
-                <div>
-                  <div className="text-sm font-medium text-slate-200">Standard User</div>
-                  <div className="text-[11px] text-slate-400">Regular messaging</div>
-                </div>
-              </label>
-
-              <label 
-                onClick={() => setRole('ADMIN')}
-                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                  role === 'ADMIN' 
-                    ? 'border-indigo-500/50 bg-indigo-950/30 ring-1 ring-indigo-500/30' 
-                    : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900/40'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="role"
-                  value="ADMIN"
-                  checked={role === 'ADMIN'}
-                  onChange={() => setRole('ADMIN')}
-                  className="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700 focus:ring-indigo-500"
-                />
-                <div>
-                  <div className="text-sm font-medium text-slate-200 flex items-center gap-1">
-                    Administrator <ShieldIcon className="w-3 h-3 text-indigo-400" />
-                  </div>
-                  <div className="text-[11px] text-slate-400">Admin privileges</div>
-                </div>
-              </label>
-            </div>
           </div>
 
           <div>

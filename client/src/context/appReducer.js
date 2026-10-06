@@ -25,16 +25,25 @@ export function appReducer(state, action) {
 
     // Selects a contact and clears their unread count
     case ACTIONS.SELECT_USER: {
-      const { user } = action.payload;
-      return {
-        ...state,
-        selectedUser: user,
-        unreadCounts: {
-          ...state.unreadCounts,
-          [user.id]: 0,
-        },
-      };
-    }
+  const { user } = action.payload;
+
+  // Allow clearing the selected user
+  if (!user) {
+    return {
+      ...state,
+      selectedUser: null,
+    };
+  }
+
+  return {
+    ...state,
+    selectedUser: user,
+    unreadCounts: {
+      ...state.unreadCounts,
+      [user.id]: 0,
+    },
+  };
+}
 
     // Appends an outgoing message to the conversation
     case ACTIONS.SEND_MESSAGE: {

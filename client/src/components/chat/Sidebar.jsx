@@ -18,11 +18,17 @@ export default function Sidebar() {
 
 
   // 2. Local interactive state using useState
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterMode, setFilterMode] = useState('all'); // 'all' | 'online'
+  // 2. Local interactive state using useState
+const [searchTerm, setSearchTerm] = useState('');
+const [filterMode, setFilterMode] = useState('all'); // 'all' | 'online'
 
-  // Filter users based on search term & online filter
-  const filteredUsers = users.filter((user) => {
+// Don't render the sidebar until a user is available
+if (!currentUser) {
+  return null;
+}
+
+// Filter users based on search term & online filter
+const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
