@@ -4,7 +4,7 @@ const Message = require("../models/Message");
 const getMessages = async (req, res) => {
     try {
         const { userId } = req.params;
-        const currentUserId = req.user;
+        const currentUserId = req.user.id;
 
         const messages = await Message.find({
             $or: [
@@ -37,7 +37,7 @@ const createMessage = async (req, res) => {
         }
 
         const message = await Message.create({
-            sender: req.user,
+            sender: req.user.id,
             receiver,
             content
         });

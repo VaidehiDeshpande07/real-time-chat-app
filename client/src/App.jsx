@@ -9,7 +9,7 @@ import { useAppContext } from './context/AppContext';
 
 export default function App() {
   // 1. Consume shared state and actions from AppContext via useContext
-  const { currentView, setCurrentView, selectedUser } = useAppContext();
+  const { currentView, setCurrentView, selectedUser, login } = useAppContext();
 
   // 2. Demonstrate useEffect for dynamic browser document title updates
   useEffect(() => {
@@ -58,7 +58,13 @@ export default function App() {
           <div className="h-full overflow-y-auto">
             <LoginForm
               onNavigateToRegister={() => setCurrentView('register')}
-              onDemoLogin={() => setCurrentView('chat')}
+              onDemoLogin={(user) => {
+                if (user) {
+                  login(user);
+                } else {
+                  setCurrentView('chat');
+                }
+              }}
             />
           </div>
         )}

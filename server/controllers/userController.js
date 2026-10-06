@@ -37,12 +37,14 @@ const createUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Normal users cannot assign themselves ADMIN during registration
     const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    status
-});
+        name,
+        email,
+        password: hashedPassword,
+        status: status || "offline",
+        role: "USER"
+    });
 
         const safeUser = user.toObject();
         delete safeUser.password;
@@ -55,7 +57,31 @@ const createUser = async (req, res) => {
     }
 };
 
+// Admin-only dashboard/data endpoint (Experiment 6)
+const getAdminData = async (req, res) => {
+    try {
+        const totalUsers = await User.countDocuments();
+        const onlineUsers = await User.countDocuments({ status: "online" });
+        const adminUsers = await User.countDocuments({ role: "ADMIN" });
+
+        res.json({
+            message: "Admin dashboard access granted",
+            adminUser: req.user,
+            stats: {
+                totalUsers,
+                onlineUsers,
+                adminUsers
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Failed to fetch admin data"
+        });
+    }
+};
+
 module.exports = {
     getUsers,
-    createUser
+    createUser,
+    getAdminData
 };

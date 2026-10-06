@@ -86,3 +86,19 @@ export async function sendMessage(receiver, content, token) {
 
     return data;
 }
+
+export async function getAdminData(token) {
+    const response = await fetch(`${API_URL}/users/admin`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch admin data");
+    }
+
+    return data;
+}

@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema(
         status: {
             type: String,
             default: "offline"
+        },
+
+        role: {
+            type: String,
+            enum: ["USER", "ADMIN"],
+            default: "USER"
         }
     },
     {

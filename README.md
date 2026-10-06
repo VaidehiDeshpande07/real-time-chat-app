@@ -16,11 +16,11 @@ A full-stack, real-time messaging platform ("NexTalk") developed progressively a
 
 - [x] **Experiment 1:** Build responsive and interactive UIs using Tailwind CSS
 - [x] **Experiment 2:** React Hooks: `useState`, `useEffect`, `useContext`, custom hooks
-- [ ] **Experiment 3:** Manage complex state with Context API or Redux
-- [ ] **Experiment 4:** REST API Design with MongoDB + Mongoose Integration
-- [ ] **Experiment 5:** Create secure, production-ready RESTful APIs
-- [ ] **Experiment 6:** Implement authentication and user roles with JWT
-- [ ] **Experiment 7:** Validate RESTful APIs using Postman
+- [x] **Experiment 3:** Manage complex state with Context API + useReducer
+- [x] **Experiment 4:** REST API Design with MongoDB + Mongoose Integration
+- [x] **Experiment 5:** Create secure, production-ready RESTful APIs
+- [x] **Experiment 6:** Implement authentication and user roles with JWT
+- [x] **Experiment 7:** Validate RESTful APIs using Postman
 - [ ] **Experiment 8:** Enable real-time communication via WebSockets/Socket.IO
 - [ ] **Experiment 9:** CI/CD Deployment with GitHub Actions + Render/Vercel
 - [ ] **Experiment 10:** Deploy the full-stack application using Docker and DevOps tools

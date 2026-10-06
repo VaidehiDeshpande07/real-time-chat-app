@@ -14,7 +14,10 @@ const protect = (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.user = decoded.userId;
+        req.user = {
+            id: decoded.userId,
+            role: decoded.role || "USER"
+        };
 
         next();
     } catch (error) {
@@ -24,4 +27,29 @@ const protect = (req, res, next) => {
     }
 };
 
-module.exports = protect;
+/**
+ * Role-based authorization middleware (Experiment 6)
+ * Usage: requireRole("ADMIN")
+ */
+const requireRole = (...roles) => {
+    return (req, res, next) => {
+        if (!req.user || !req.user.role) {
+            return res.status(401).json({
+                message: "Not authorized, user information missing"
+            });
+        }
+
+        if (!roles.includes(req.user.role)) {
+            return res.status(403).json({
+                message: "Forbidden: You do not have permission to access this resource"
+            });
+        }
+
+        next();
+    };
+};
+
+module.exports = {
+    protect,
+    requireRole
+};

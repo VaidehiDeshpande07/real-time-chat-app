@@ -304,12 +304,27 @@ const currentView =
     setShowChatOnMobile(false);
   };
 
+  const login = (userData, token) => {
+    if (token) localStorage.setItem('token', token);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+      setCurrentUser({
+        ...userData,
+        id: userData._id || userData.id,
+        avatar: userData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name || 'User')}`,
+        role: userData.role || 'USER'
+      });
+    }
+    setCurrentView('chat');
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
 
     setCurrentUser(mockCurrentUser);
-    setCurrentView('landing');  };
+    setCurrentView('landing');
+  };
 
   // ---------------------------------------------------------
   // CONTEXT VALUE
@@ -318,6 +333,7 @@ const currentView =
   const value = {
     currentUser,
     setCurrentUser,
+    login,
 
     currentView,
     setCurrentView,
