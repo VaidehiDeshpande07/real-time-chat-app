@@ -2,24 +2,39 @@ import React, { useState } from 'react';
 import { ShieldIcon } from '../common/Icons';
 import { loginUser } from '../../services/api';
 
-export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
-  const [email, setEmail] = useState('alex.demo@example.com');
-  const [password, setPassword] = useState('DemoPassword789');
+export default function LoginForm({ onNavigateToRegister, onLoginSuccess }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    try {
-      const data = await loginUser(email, password);
+    if (!email.trim() || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
 
+    setLoading(true);
+    console.log(`[Frontend Auth] Sending login request for: ${email}`);
+
+    try {
+      const data = await loginUser(email.trim(), password);
+
+      console.log('[Frontend Auth] Login successful:', data.user);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      onDemoLogin(data.user);
+      if (onLoginSuccess) {
+        onLoginSuccess(data.user, data.token);
+      }
     } catch (err) {
-      setError(err.message);
+      console.error('[Frontend Auth] Login failed:', err.message);
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,9 +85,9 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
           </div>
 
           {error && (
-            <p className="text-sm text-red-400">
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
               {error}
-            </p>
+            </div>
           )}
 
           <div className="flex items-center justify-between pt-1">
@@ -93,9 +108,10 @@ export default function LoginForm({ onNavigateToRegister, onDemoLogin }) {
 
           <button
             type="submit"
-            className="w-full mt-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 group"
+            disabled={loading}
+            className="w-full mt-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 group cursor-pointer"
           >
-            <span>Sign In to NexTalk</span>
+            <span>{loading ? 'Signing In...' : 'Sign In to NexTalk'}</span>
             <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>

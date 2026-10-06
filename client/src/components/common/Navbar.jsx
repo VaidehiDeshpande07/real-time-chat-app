@@ -94,20 +94,20 @@ export default function Navbar() {
           <div className="flex items-center gap-3 pl-2 sm:border-l sm:border-slate-800">
             <div className="flex items-center gap-2.5">
               <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
+                src={currentUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || 'User')}`}
+                alt={currentUser?.name || 'User'}
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-500/40"
               />
               <div className="hidden md:block text-left">
                 <div className="text-xs font-bold text-white flex items-center gap-1">
-                  <span>{currentUser.name}</span>
-                  {currentUser.role === 'ADMIN' && (
+                  <span>{currentUser?.name || 'User'}</span>
+                  {currentUser?.role === 'ADMIN' && (
                     <span className="inline-flex items-center text-[9px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">
                       <ShieldIcon className="w-2.5 h-2.5" /> ADMIN
                     </span>
                   )}
                 </div>
-                <div className="text-[10px] text-slate-400 truncate max-w-[120px]">{currentUser.email}</div>
+                <div className="text-[10px] text-slate-400 truncate max-w-[120px]">{currentUser?.email || ''}</div>
               </div>
             </div>
 

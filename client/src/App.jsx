@@ -58,12 +58,8 @@ export default function App() {
           <div className="h-full overflow-y-auto">
             <LoginForm
               onNavigateToRegister={() => setCurrentView('register')}
-              onDemoLogin={(user) => {
-                if (user) {
-                  login(user);
-                } else {
-                  setCurrentView('chat');
-                }
+              onLoginSuccess={(user, token) => {
+                login(user, token);
               }}
             />
           </div>
@@ -73,7 +69,7 @@ export default function App() {
           <div className="h-full overflow-y-auto">
             <RegisterForm
               onNavigateToLogin={() => setCurrentView('login')}
-              onDemoRegister={() => setCurrentView('chat')}
+              onRegisterSuccess={() => setCurrentView('login')}
             />
           </div>
         )}

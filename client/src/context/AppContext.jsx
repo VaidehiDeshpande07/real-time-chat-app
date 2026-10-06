@@ -25,11 +25,12 @@ const initialUnreadCounts = mockUsers.reduce((acc, user) => {
 }, {});
 
 // Initial chat state
+const tokenExists = typeof window !== 'undefined' && !!localStorage.getItem('token');
 const initialChatState = {
-  selectedUser: mockUsers[0],
-  conversations: mockConversations,
-  unreadCounts: initialUnreadCounts,
-  users: mockUsers,
+  selectedUser: tokenExists ? null : mockUsers[0],
+  conversations: tokenExists ? {} : mockConversations,
+  unreadCounts: tokenExists ? {} : initialUnreadCounts,
+  users: tokenExists ? [] : mockUsers,
 };
 
 export function AppProvider({ children }) {
@@ -38,7 +39,7 @@ export function AppProvider({ children }) {
   const storedUser = localStorage.getItem('user');
 
   const [currentUser, setCurrentUser] = useState(
-    storedUser ? JSON.parse(storedUser) : mockCurrentUser
+    storedUser ? JSON.parse(storedUser) : null
   );
 
   // View
@@ -69,59 +70,70 @@ const currentView =
   // LOAD USERS FROM MONGODB
   // ---------------------------------------------------------
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-
+  const fetchUsersFromDB = async (authToken) => {
+    const token = authToken || localStorage.getItem('token');
     if (!token) return;
 
-    const loadUsers = async () => {
-      try {
-        const data = await getUsers(token);
+    try {
+      console.log('[Frontend Auth] Fetching registered users from MongoDB...');
+      const data = await getUsers(token);
 
-        const loggedInUser = JSON.parse(
-          localStorage.getItem('user')
-        );
+      const stored = localStorage.getItem('user');
+      const loggedInUser = stored ? JSON.parse(stored) : null;
 
-        const formattedUsers = data
-          .filter((user) => user._id !== loggedInUser?._id)
-          .map((user) => ({
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            status: user.status,
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              user.name
-            )}`,
-            role: 'User',
-            unreadCount: 0,
-          }));
+      const formattedUsers = data
+        .filter((user) => user._id !== loggedInUser?._id && user._id !== loggedInUser?.id)
+        .map((user) => ({
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          status: user.status || 'offline',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            user.name
+          )}`,
+          role: user.role || 'USER',
+          unreadCount: 0,
+        }));
 
+      console.log(`[Frontend Auth] Successfully loaded ${formattedUsers.length} real users from MongoDB`);
+
+      dispatch({
+        type: ACTIONS.SET_USERS,
+        payload: {
+          users: formattedUsers,
+        },
+      });
+
+      // Select first real contact if available
+      if (formattedUsers.length > 0) {
         dispatch({
-          type: ACTIONS.SET_USERS,
+          type: ACTIONS.SELECT_USER,
           payload: {
-            users: formattedUsers,
+            user: formattedUsers[0],
           },
         });
-
-        // Select first real user
-        if (formattedUsers.length > 0) {
-          dispatch({
-            type: ACTIONS.SELECT_USER,
-            payload: {
-              user: formattedUsers[0],
-            },
-          });
-        }
-
-      } catch (error) {
-        console.error(
-          'Failed to load users:',
-          error.message
-        );
+      } else {
+        dispatch({
+          type: ACTIONS.SELECT_USER,
+          payload: {
+            user: null,
+          },
+        });
       }
-    };
 
-    loadUsers();
+    } catch (error) {
+      console.error(
+        '[Frontend Auth] Failed to load users from MongoDB:',
+        error.message
+      );
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUsersFromDB(token);
+    }
   }, []);
 
   // ---------------------------------------------------------
@@ -315,6 +327,8 @@ const currentView =
         role: userData.role || 'USER'
       });
     }
+    // Fetch fresh real MongoDB users immediately
+    fetchUsersFromDB(token);
     setCurrentView('chat');
   };
 
@@ -323,6 +337,14 @@ const currentView =
     localStorage.removeItem('user');
 
     setCurrentUser(mockCurrentUser);
+    dispatch({
+      type: ACTIONS.SET_USERS,
+      payload: { users: [] }
+    });
+    dispatch({
+      type: ACTIONS.SELECT_USER,
+      payload: { user: null }
+    });
     setCurrentView('landing');
   };
 

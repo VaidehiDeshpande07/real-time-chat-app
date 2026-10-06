@@ -19,18 +19,33 @@ export async function loginUser(email, password) {
 }
 
 export async function registerUser(userData) {
-    const response = await fetch(`${API_URL}/users`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(userData)
-    });
+    let response;
+    try {
+        response = await fetch(`${API_URL}/auth/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userData)
+        });
+    } catch (err) {
+        // Fallback to /users endpoint if /auth/register fails network
+        response = await fetch(`${API_URL}/users`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userData)
+        });
+    }
 
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+        const errorMsg = data.errors && data.errors.length > 0 
+            ? data.errors.map(e => e.msg).join(", ") 
+            : (data.message || "Registration failed");
+        throw new Error(errorMsg);
     }
 
     return data;
