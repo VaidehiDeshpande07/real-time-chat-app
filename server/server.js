@@ -49,4 +49,12 @@ const startServer = async () => {
     });
 };
 
+process.on("unhandledRejection", (reason) => {
+    console.error("[Process Warning] Unhandled Rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+    console.error("[Process Error] Uncaught Exception:", error);
+});
+
 startServer();

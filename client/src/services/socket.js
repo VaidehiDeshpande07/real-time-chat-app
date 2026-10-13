@@ -34,6 +34,15 @@ export function initSocket(token) {
 
   socket.on("connect_error", (error) => {
     console.error("[Socket.IO Client] Connection error:", error.message);
+    if (
+      error.message &&
+      (error.message.includes("jwt expired") ||
+        error.message.includes("Token required") ||
+        error.message.includes("Authentication error"))
+    ) {
+      console.warn("[Socket.IO Client] Authentication error encountered; stopping reconnection attempts.");
+      socket.disconnect();
+    }
   });
 
   socket.on("disconnect", (reason) => {
