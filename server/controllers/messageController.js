@@ -53,6 +53,12 @@ const createMessage = async (req, res) => {
             }
         ]);
 
+        // Emit real-time event to recipient via Socket.IO if available
+        const io = req.app.get("io");
+        if (io) {
+            io.to(receiver.toString()).emit("message:new", populatedMessage);
+        }
+
         res.status(201).json(populatedMessage);
     }  catch (error) {
     console.error("Create message error:", error.message);

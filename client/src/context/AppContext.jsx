@@ -15,6 +15,7 @@ import {
   getMessages,
   sendMessage as sendMessageAPI,
 } from '../services/api';
+import { initSocket, getSocket, disconnectSocket } from '../services/socket';
 
 const AppContext = createContext(null);
 
@@ -137,6 +138,94 @@ const currentView =
   }, []);
 
   // ---------------------------------------------------------
+  // SOCKET.IO REAL-TIME LIFECYCLE & EVENT LISTENERS
+  // ---------------------------------------------------------
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const currentUserId = currentUser?._id || currentUser?.id;
+
+    if (!token || !currentUserId) {
+      disconnectSocket();
+      return;
+    }
+
+    console.log('[AppContext] Initializing real-time Socket.IO connection...');
+    const socket = initSocket(token);
+
+    // Handle incoming real-time message
+    const handleNewMessage = (msg) => {
+      if (!msg) return;
+      const senderId = msg.sender?._id || msg.sender;
+      const receiverId = msg.receiver?._id || msg.receiver;
+      const isFromMe = senderId === currentUserId;
+      const partnerId = isFromMe ? receiverId : senderId;
+
+      const formattedMsg = {
+        id: msg._id,
+        senderId: senderId,
+        receiverId: receiverId,
+        text: msg.content,
+        timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        fromMe: isFromMe,
+        status: 'delivered',
+      };
+
+      if (isFromMe) {
+        dispatch({
+          type: ACTIONS.SEND_MESSAGE,
+          payload: { userId: partnerId, message: formattedMsg },
+        });
+      } else {
+        dispatch({
+          type: ACTIONS.RECEIVE_MESSAGE,
+          payload: { userId: partnerId, message: formattedMsg },
+        });
+      }
+    };
+
+    // Handle user presence events
+    const handleUserOnline = ({ userId }) => {
+      console.log(`[Socket.IO Event] Contact came online: ${userId}`);
+      dispatch({
+        type: ACTIONS.SET_ONLINE_STATUS,
+        payload: { userId, isOnline: true },
+      });
+    };
+
+    const handleUserOffline = ({ userId }) => {
+      console.log(`[Socket.IO Event] Contact went offline: ${userId}`);
+      dispatch({
+        type: ACTIONS.SET_ONLINE_STATUS,
+        payload: { userId, isOnline: false },
+      });
+    };
+
+    const handleOnlineList = (onlineUserIds) => {
+      console.log(`[Socket.IO Event] Received online users list:`, onlineUserIds);
+      dispatch({
+        type: ACTIONS.SET_ONLINE_USERS,
+        payload: { onlineUserIds },
+      });
+    };
+
+    socket.on('message:new', handleNewMessage);
+    socket.on('user:online', handleUserOnline);
+    socket.on('user:offline', handleUserOffline);
+    socket.on('users:online_list', handleOnlineList);
+
+    return () => {
+      socket.off('message:new', handleNewMessage);
+      socket.off('user:online', handleUserOnline);
+      socket.off('user:offline', handleUserOffline);
+      socket.off('users:online_list', handleOnlineList);
+    };
+  }, [currentUser?.id, currentUser?._id]);
+
+  // ---------------------------------------------------------
   // LOAD MESSAGES FROM MONGODB
   // ---------------------------------------------------------
 
@@ -211,38 +300,72 @@ const currentView =
   };
 
   // ---------------------------------------------------------
-  // SEND MESSAGE TO MONGODB
+  // SEND MESSAGE (SOCKET.IO REAL-TIME WITH REST FALLBACK)
   // ---------------------------------------------------------
 
   const sendMessage = async (text) => {
-    if (!chatState.selectedUser) return;
+    if (!chatState.selectedUser || !text?.trim()) return;
 
     const token = localStorage.getItem('token');
-
     if (!token) return;
 
-    try {
-      const data = await sendMessageAPI(
-        chatState.selectedUser.id,
-        text,
-        token
+    const targetUserId = chatState.selectedUser.id;
+    const socket = getSocket();
+
+    // 1. Prefer Socket.IO for real-time delivery
+    if (socket && socket.connected) {
+      socket.emit(
+        'message:send',
+        { receiver: targetUserId, content: text.trim() },
+        (response) => {
+          if (response && response.status === 'ok') {
+            const data = response.message;
+            const newMsg = {
+              id: data._id,
+              senderId: data.sender._id || data.sender,
+              receiverId: data.receiver._id || data.receiver,
+              text: data.content,
+              timestamp: new Date(data.createdAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+              fromMe: true,
+              status: 'delivered',
+            };
+
+            dispatch({
+              type: ACTIONS.SEND_MESSAGE,
+              payload: {
+                userId: targetUserId,
+                message: newMsg,
+              },
+            });
+          } else {
+            console.warn('[Socket.IO] Send failed, falling back to REST API:', response?.message);
+            fallbackSendREST(targetUserId, text.trim(), token);
+          }
+        }
       );
+    } else {
+      // 2. Fallback to REST API if socket is not currently connected
+      console.log('[AppContext] Socket disconnected, sending message via REST API...');
+      await fallbackSendREST(targetUserId, text.trim(), token);
+    }
+  };
+
+  const fallbackSendREST = async (targetUserId, text, token) => {
+    try {
+      const data = await sendMessageAPI(targetUserId, text, token);
 
       const newMsg = {
         id: data._id,
-
         senderId: data.sender._id,
         receiverId: data.receiver._id,
-
         text: data.content,
-
-        timestamp: new Date(
-          data.createdAt
-        ).toLocaleTimeString([], {
+        timestamp: new Date(data.createdAt).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
         }),
-
         fromMe: true,
         status: 'delivered',
       };
@@ -250,16 +373,12 @@ const currentView =
       dispatch({
         type: ACTIONS.SEND_MESSAGE,
         payload: {
-          userId: chatState.selectedUser.id,
+          userId: targetUserId,
           message: newMsg,
         },
       });
-
     } catch (error) {
-      console.error(
-        'Failed to send message:',
-        error.message
-      );
+      console.error('Failed to send message via REST:', error.message);
     }
   };
 
@@ -333,6 +452,9 @@ const currentView =
   };
 
   const logout = () => {
+    // Clean up real-time socket connection
+    disconnectSocket();
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
 

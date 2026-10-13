@@ -12,6 +12,7 @@ export const ACTIONS = {
   RECEIVE_MESSAGE:    'RECEIVE_MESSAGE',
   MARK_MESSAGES_READ: 'MARK_MESSAGES_READ',
   SET_ONLINE_STATUS:  'SET_ONLINE_STATUS',
+  SET_ONLINE_USERS:   'SET_ONLINE_USERS',
   SET_USERS:          'SET_USERS',
   SET_CONVERSATIONS:  'SET_CONVERSATIONS',
 };
@@ -45,10 +46,14 @@ export function appReducer(state, action) {
   };
 }
 
-    // Appends an outgoing message to the conversation
+    // Appends an outgoing message to the conversation (preventing duplicates)
     case ACTIONS.SEND_MESSAGE: {
       const { userId, message } = action.payload;
       const existing = state.conversations[userId] || [];
+      // Prevent duplicate messages with same ID
+      if (message.id && existing.some((m) => m.id === message.id)) {
+        return state;
+      }
       return {
         ...state,
         conversations: {
@@ -58,10 +63,14 @@ export function appReducer(state, action) {
       };
     }
 
-    // Appends incoming message; increments unread if user is not selected
+    // Appends incoming message; increments unread if user is not selected (preventing duplicates)
     case ACTIONS.RECEIVE_MESSAGE: {
       const { userId, message } = action.payload;
       const existing = state.conversations[userId] || [];
+      // Prevent duplicate messages with same ID
+      if (message.id && existing.some((m) => m.id === message.id)) {
+        return state;
+      }
       const isCurrentUser = state.selectedUser?.id === userId;
       const prevUnread = state.unreadCounts[userId] || 0;
       return {
@@ -89,7 +98,7 @@ export function appReducer(state, action) {
       };
     }
 
-    // Updates online/offline status for a user
+    // Updates online/offline status for a single user
     case ACTIONS.SET_ONLINE_STATUS: {
       const { userId, isOnline } = action.payload;
       return {
@@ -103,6 +112,28 @@ export function appReducer(state, action) {
           state.selectedUser?.id === userId || state.selectedUser?._id === userId
             ? { ...state.selectedUser, status: isOnline ? 'online' : 'offline' }
             : state.selectedUser,
+      };
+    }
+
+    // Bulk updates online status based on connected users list
+    case ACTIONS.SET_ONLINE_USERS: {
+      const { onlineUserIds } = action.payload;
+      const onlineSet = new Set(onlineUserIds);
+      return {
+        ...state,
+        users: state.users.map((u) => {
+          const isOnline = onlineSet.has(u.id) || onlineSet.has(u._id);
+          return { ...u, status: isOnline ? 'online' : 'offline' };
+        }),
+        selectedUser: state.selectedUser
+          ? {
+              ...state.selectedUser,
+              status:
+                onlineSet.has(state.selectedUser.id) || onlineSet.has(state.selectedUser._id)
+                  ? 'online'
+                  : 'offline',
+            }
+          : null,
       };
     }
 

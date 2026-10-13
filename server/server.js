@@ -1,13 +1,20 @@
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const authRoutes = require("./routes/authRoutes");
+const { initSocket } = require("./socket");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
 
 const app = express();
+const server = http.createServer(app);
+
+// Initialize Socket.IO with HTTP server
+const io = initSocket(server);
+app.set("io", io);
 
 // Middleware
 app.use(cors({
@@ -36,8 +43,9 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
     await connectDB();
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`Socket.IO initialized on ws://localhost:${PORT}`);
     });
 };
 
