@@ -1,8 +1,8 @@
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const User = require("./models/User");
-const Message = require("./models/Message");
+const User = require("./models/user");
+const Message = require("./models/message");
 
 // In-memory mapping of online users: userId -> Set of active socket IDs
 // Supports multiple tabs / devices per user

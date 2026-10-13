@@ -137,11 +137,18 @@ export function appReducer(state, action) {
       };
     }
 
-    // Replaces users list (used in Experiment 4+ from API)
+    // Replaces users list while preserving current real-time online presence
     case ACTIONS.SET_USERS: {
+      const existingOnlineSet = new Set(
+        state.users.filter((u) => u.status === 'online').map((u) => u.id || u._id)
+      );
+      const mergedUsers = action.payload.users.map((u) => {
+        const uId = u.id || u._id;
+        return existingOnlineSet.has(uId) ? { ...u, status: 'online' } : u;
+      });
       return {
         ...state,
-        users: action.payload.users,
+        users: mergedUsers,
       };
     }
 

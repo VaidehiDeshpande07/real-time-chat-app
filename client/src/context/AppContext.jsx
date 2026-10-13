@@ -156,9 +156,9 @@ const currentView =
     // Handle incoming real-time message
     const handleNewMessage = (msg) => {
       if (!msg) return;
-      const senderId = msg.sender?._id || msg.sender;
-      const receiverId = msg.receiver?._id || msg.receiver;
-      const isFromMe = senderId === currentUserId;
+      const senderId = String(msg.sender?._id || msg.sender);
+      const receiverId = String(msg.receiver?._id || msg.receiver);
+      const isFromMe = senderId === String(currentUserId);
       const partnerId = isFromMe ? receiverId : senderId;
 
       const formattedMsg = {

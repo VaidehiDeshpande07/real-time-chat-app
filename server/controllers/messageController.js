@@ -1,4 +1,4 @@
-const Message = require("../models/Message");
+const Message = require("../models/message");
 
 // Get messages between two users
 const getMessages = async (req, res) => {
